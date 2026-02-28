@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Boost.Asio App",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceFolder}/channels",
+        "args": [],
+        "cwd": "${workspaceFolder}",
+        "stopAtEntry": false,
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+  
