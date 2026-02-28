@@ -1,5 +1,53 @@
 #include <string>
 #include <array>
+#include <cstdlib>
+#include <algorithm>
+#include <cstddef>
+
+// there are thre types of edits that can be performed on strings
+// inser a character, remove a character or replace a character.
+// Given two strings, write a function to check if they are one edit(or zero edits)away
+bool OneAway(const std::string& left,const std::string& right)
+{
+    const auto lhsSize{left.size()};
+    const auto rhsSize{right.size()};
+    const auto diff = rhsSize>lhsSize?(rhsSize-lhsSize):(lhsSize-rhsSize);
+    if (diff>1 ) return false;
+
+    bool edited = false;
+    
+    std::size_t i{};
+    std::size_t j{};
+
+    while (i<lhsSize&&j<rhsSize)
+    {
+        const unsigned char lhsChar = left[i];
+        const unsigned char rhsChar = right[j];
+        if (lhsChar==rhsChar)
+        {
+            ++i,++j;
+            continue;
+        }
+            
+        if (edited)
+            return false;
+        edited=true;
+        if (lhsSize==rhsSize)
+        {
+            ++i,++j; //replace case
+        }
+        else if(lhsSize>rhsSize)
+        {
+            ++i; // delete from left / insert into right
+        }
+        else
+        {
+            ++j;
+        }
+    }
+    return true;
+}
+
 
 bool IsUnique(const std::string& unique)
 {
