@@ -2,6 +2,9 @@
 #include <unordered_set>
 #include <iostream>
 #include <vector>
+#include <queue>
+#include <span>
+#include <map>
 
 class BinaryTree
 {
@@ -53,6 +56,7 @@ struct Node
     std::string name;
     std::vector<Node*> m_neighbors;
     bool visited{false};
+    bool marked{false};
 };
 
 inline void Visit(Node* node)
@@ -76,3 +80,152 @@ void DepthFirstSearch(Node* root)
         if (!node->visited)  DepthFirstSearch(node);
     }
 }
+
+
+void BreathFirstSearch(Node* root)
+{
+    std::queue<Node*> itsQueue;
+    root->marked=true;
+    itsQueue.push(root); // enqueue
+
+    while (!itsQueue.empty())
+    {
+        Node* r = itsQueue.front();
+        itsQueue.pop();
+        Visit(r);
+        for (auto* node:r->m_neighbors)
+        {
+            if (node->marked==false)
+            {
+                node->marked=true;
+                itsQueue.push(node); // enqueue
+            }
+        }
+    }
+}
+
+// Given a directed graph and two nodes ( S and E), design an algorithm to find out 
+// whether there is a route from S to E.
+
+bool RouteStoE(Node* S, Node* E)
+{
+    // reset all to false;
+    if (S==E) return true;
+    if (S==nullptr  ||  E==nullptr) return false;
+    std::queue<Node*> itsQueue;
+    S->marked=true;
+    itsQueue.push(S); // enqueue
+
+    while (!itsQueue.empty())
+    {
+        Node* r = itsQueue.front();
+        itsQueue.pop();
+
+        if (r == E) return true;
+
+        Visit(r);
+        for (auto* node:r->m_neighbors)
+        {
+            if (node->marked==false)
+            {
+                node->marked=true;
+                itsQueue.push(node); // enqueue
+            }
+        }
+    }
+    return false;
+}
+
+// Given a sorted ( increasing order ) array with unique integer elements, write
+// an algorithm to create a binary search tree with minimal height.
+
+template <typename T>
+std::unique_ptr<BinaryTree>  MinimalTree(std::span<const T> increasingOrderSorted)
+{
+    if (increasingOrderSorted.size()==0) nullptr;
+
+    const std::size_t middleIdx = increasingOrderSorted.size() / 2;
+
+    auto root = std::make_unique<BinaryTree>(increasingOrderSorted[middleIdx]);
+
+    auto left  = increasingOrderSorted.subspan(0, middleIdx);
+    auto right = increasingOrderSorted.subspan(middleIdx + 1);
+
+    root->m_left = MinimalTree(left);
+    root->m_right = MinimalTree(right);
+    return root;
+}
+
+std::unique_ptr<BinaryTree> buildMinimalTree(
+    const std::vector<int>& arr, int lo, int hi)
+{
+    if (lo > hi) return nullptr;
+
+    int mid = lo + (hi - lo) / 2;
+    auto root = std::make_unique<BinaryTree>(arr[mid]);
+
+    root->m_left  = buildMinimalTree(arr, lo, mid - 1);
+    root->m_right = buildMinimalTree(arr, mid + 1, hi);
+
+    return root;
+}
+
+std::unique_ptr<BinaryTree> MinimalTree(const std::vector<int>& increasingOrderSorted)
+{
+    if (increasingOrderSorted.empty()) return nullptr;
+    return buildMinimalTree(increasingOrderSorted, 0,
+                            static_cast<int>(increasingOrderSorted.size()) - 1);
+}
+
+// Given a binary tree, design an algorithm which creates a linked list of all the nodes of each depth
+// e.g. If you have a tree with depth D, you will have D Linked list
+
+struct BinaryTreeNode
+{
+    std::string name;
+    BinaryTreeNode* m_left;
+    BinaryTreeNode* m_right;
+};
+
+class LinkedListNode
+{
+    public:
+    BinaryTreeNode* root;
+    std::unique_ptr<LinkedListNode> nextNode{ };
+    
+    explicit LinkedListNode(BinaryTreeNode*init):root(init){}
+
+    void AppendToTail(BinaryTreeNode* tail)
+	{
+        if (!tail) return;
+		LinkedListNode* currentNode = this;
+		while (currentNode->nextNode != nullptr)
+		{
+			currentNode = currentNode->nextNode.get();
+		}
+		currentNode->nextNode = std::make_unique<LinkedListNode>(tail);
+    }
+};
+
+std::map<int, std::unique_ptr<LinkedListNode>> linkedLists;
+
+void AddToLevel(BinaryTreeNode* node, int depth)
+{
+    if (!node) return;
+
+    if (!linkedLists.contains(depth)) {
+        linkedLists[depth] = std::make_unique<LinkedListNode>(node);
+    } else {
+        linkedLists[depth]->AppendToTail(node);
+    }
+
+    AddToLevel(node->m_left, depth + 1);
+    AddToLevel(node->m_right, depth + 1);
+}
+
+void ListOfDepths(BinaryTreeNode* root)
+{
+    linkedLists.clear();
+    AddToLevel(root, 0);
+}
+
