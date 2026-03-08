@@ -5,6 +5,7 @@
 #include <queue>
 #include <span>
 #include <map>
+#include <limits>
 
 class BinaryTree
 {
@@ -229,3 +230,52 @@ void ListOfDepths(BinaryTreeNode* root)
     AddToLevel(root, 0);
 }
 
+// Check balanced. Implement a function to check if a binary tree is balanced. For the purposes of this question, 
+// a balanced tree is defined to be a tree such that the heights of the two subtrees of any node never
+// differ by more than one
+
+struct BalancedNode
+{
+    BalancedNode* m_left;
+    BalancedNode* m_right;
+};
+
+int Height(BalancedNode* n) {
+    if (!n) return 0;
+    int left = Height(n->m_left);    // go down
+    if (left==-1) return -1;
+    int right = Height(n->m_right);  // go down
+    if (right=-1) return -1;
+    if (std::abs(left-right)>1)
+    {
+       return -1; // unbalanced
+    }
+    return 1 + std::max(left, right);   // return up
+}
+
+// implement a function to check if binary tree is binary search tree
+
+struct BSTNode
+{
+    int value;
+    BSTNode* m_left;
+    BSTNode* m_right;
+};
+
+bool BSTCheck(BSTNode* node, long long minVal, long long maxVal)
+{
+    if (!node) return true;
+
+    if (node->value <= minVal || node->value >= maxVal)
+        return false;
+
+    return BSTCheck(node->m_left, minVal, node->value) &&
+           BSTCheck(node->m_right, node->value, maxVal);
+}
+
+bool StartBSTCheck(BSTNode* root)
+{
+    return BSTCheck(root,
+                    std::numeric_limits<long long>::min(),
+                    std::numeric_limits<long long>::max());
+}
